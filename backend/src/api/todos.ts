@@ -80,7 +80,7 @@ export const updateTodo = async (
 
 export const generateUploadUrl = (event: APIGatewayProxyEvent): string => {
   const bucket = storageService.getBucketName()
-  const urlExpiration = process.env.SIGNED_URL_EXPIRATION
+  const urlExpiration = parseInt(process.env.SIGNED_URL_EXPIRATION)
   const todoId = event.pathParameters.todoId
 
   const createSignedUrlRequest = {
