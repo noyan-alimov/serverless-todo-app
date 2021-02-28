@@ -15,14 +15,6 @@ export const handler: APIGatewayProxyHandler = async (
   const newTodo: CreateTodoRequest = JSON.parse(event.body)
 
   // TODO: Implement creating a new TODO item
-  if (!newTodo.name) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({
-        error: 'Please provide a name'
-      })
-    }
-  }
 
   const todo = await createTodo(event, newTodo)
 
