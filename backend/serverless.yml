@@ -4,7 +4,6 @@ service:
 plugins:
   - serverless-webpack
   - serverless-iam-roles-per-function
-  # - serverless-reqvalidator-plugin
 
 provider:
   name: aws
@@ -18,21 +17,6 @@ provider:
     INDEX_NAME: UserIdIndex
     S3_BUCKET: noyan-todos-serverless-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
-
-# custom:
-#   documentation:
-#     api:
-#       info:
-#         version: v1.0.0
-#         title: Serverless Todo App
-#         description: Serverless application
-#     models:
-#       - name: CreateTodo
-#         contentType: application/json
-#         schema: ${file(models/createTodo.json)}
-#       - name: UpdateTodo
-#         contentType: application/json
-#         schema: ${file(models/updateTodo.json)}
 
 functions:
   Auth:
@@ -68,11 +52,6 @@ functions:
           request:
             schema:
               application/json: ${file(models/createTodo.json)}
-          # documentation:
-          #   summary: Create a new todo
-          #   description: Create a new todo
-          #   requestModels:
-          #     'application/json': CreateTodo
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -91,11 +70,6 @@ functions:
           request:
             schema:
               application/json: ${file(models/updateTodo.json)}
-          # documentation:
-          #   summary: Update todo
-          #   description: Update todo
-          #   requestModels:
-          #     'application/json': UpdateTodo
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -204,12 +178,3 @@ resources:
               Action: s3:*
               Resource: arn:aws:s3:::${self:provider.environment.S3_BUCKET}/*
         Bucket: !Ref AttachmentBucket
-
-    # RequestBodyValidator:
-    #   Type: AWS::ApiGateway::RequestValidator
-    #   Properties:
-    #     Name: 'request-body-validator'
-    #     RestApiId:
-    #       Ref: ApiGatewayRestApi
-    #     ValidateRequestBody: true
-    #     ValidateRequestParameters: false
