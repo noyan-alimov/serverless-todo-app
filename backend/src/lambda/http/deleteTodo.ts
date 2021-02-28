@@ -10,7 +10,6 @@ import { deleteTodo } from '../../api'
 export const handler: APIGatewayProxyHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
-  // TODO: Remove a TODO item by id
   const result = await deleteTodo(event)
 
   if (!result) {

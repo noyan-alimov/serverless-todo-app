@@ -4,6 +4,7 @@ service:
 plugins:
   - serverless-webpack
   - serverless-iam-roles-per-function
+  # - serverless-reqvalidator-plugin
 
 provider:
   name: aws
@@ -18,11 +19,25 @@ provider:
     S3_BUCKET: noyan-todos-serverless-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
 
+# custom:
+#   documentation:
+#     api:
+#       info:
+#         version: v1.0.0
+#         title: Serverless Todo App
+#         description: Serverless application
+#     models:
+#       - name: CreateTodo
+#         contentType: application/json
+#         schema: ${file(models/createTodo.json)}
+#       - name: UpdateTodo
+#         contentType: application/json
+#         schema: ${file(models/updateTodo.json)}
+
 functions:
   Auth:
     handler: src/lambda/auth/auth0Authorizer.handler
 
-  # TODO: Configure this function
   GetTodos:
     handler: src/lambda/http/getTodos.handler
     events:
@@ -41,7 +56,6 @@ functions:
           - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}/index/UserIdIndex
 
-  # TODO: Configure this function
   CreateTodo:
     handler: src/lambda/http/createTodo.handler
     events:
@@ -50,13 +64,21 @@ functions:
           path: todos
           cors: true
           authorizer: Auth
+          reqValidatorName: RequestBodyValidator
+          request:
+            schema:
+              application/json: ${file(models/createTodo.json)}
+          # documentation:
+          #   summary: Create a new todo
+          #   description: Create a new todo
+          #   requestModels:
+          #     'application/json': CreateTodo
     iamRoleStatements:
       - Effect: Allow
         Action:
           - dynamodb:PutItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
-  # TODO: Configure this function
   UpdateTodo:
     handler: src/lambda/http/updateTodo.handler
     events:
@@ -65,6 +87,15 @@ functions:
           path: todos/{todoId}
           cors: true
           authorizer: Auth
+          reqValidatorName: RequestBodyValidator
+          request:
+            schema:
+              application/json: ${file(models/updateTodo.json)}
+          # documentation:
+          #   summary: Update todo
+          #   description: Update todo
+          #   requestModels:
+          #     'application/json': UpdateTodo
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -72,7 +103,6 @@ functions:
           - dynamodb:GetItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
-  # TODO: Configure this function
   DeleteTodo:
     handler: src/lambda/http/deleteTodo.handler
     events:
@@ -88,7 +118,6 @@ functions:
           - dynamodb:GetItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
-  # TODO: Configure this function
   GenerateUploadUrl:
     handler: src/lambda/http/generateUploadUrl.handler
     events:
@@ -106,8 +135,6 @@ functions:
 
 resources:
   Resources:
-    # TODO: Add any necessary AWS resources
-    # API Gateway
     GatewayResponseDefault4XX:
       Type: 'AWS::ApiGateway::GatewayResponse'
       Properties:
@@ -119,7 +146,6 @@ resources:
         RestApiId:
           Ref: 'ApiGatewayRestApi'
 
-    # DynamoDB
     TodoTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -147,7 +173,6 @@ resources:
             Projection:
               ProjectionType: ALL
 
-    # S3 Bucket
     AttachmentBucket:
       Type: AWS::S3::Bucket
       Properties:
@@ -166,7 +191,6 @@ resources:
                 - HEAD
               MaxAge: 3000
 
-    # S3 Bucket Policy
     BucketPolicy:
       Type: AWS::S3::BucketPolicy
       Properties:
@@ -180,3 +204,12 @@ resources:
               Action: s3:*
               Resource: arn:aws:s3:::${self:provider.environment.S3_BUCKET}/*
         Bucket: !Ref AttachmentBucket
+
+    # RequestBodyValidator:
+    #   Type: AWS::ApiGateway::RequestValidator
+    #   Properties:
+    #     Name: 'request-body-validator'
+    #     RestApiId:
+    #       Ref: ApiGatewayRestApi
+    #     ValidateRequestBody: true
+    #     ValidateRequestParameters: false

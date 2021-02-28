@@ -4,14 +4,10 @@ import 'source-map-support/register'
 import { verify } from 'jsonwebtoken'
 import { createLogger } from '../../utils/logger'
 import Axios from 'axios'
-// import { Jwt } from '../../auth/Jwt'
 import { JwtPayload } from '../../auth/JwtPayload'
 
 const logger = createLogger('auth')
 
-// TODO: Provide a URL that can be used to download a certificate that can be used
-// to verify JWT token signature.
-// To get this URL you need to go to an Auth0 page -> Show Advanced Settings -> Endpoints -> JSON Web Key Set
 const jwksUrl = 'https://football-booking.eu.auth0.com/.well-known/jwks.json'
 
 export const handler = async (
@@ -66,6 +62,7 @@ async function verifyToken(authHeader: string): Promise<JwtPayload> {
     const res = await Axios.get(jwksUrl)
     const pemData = res['data']['keys'][0]['x5c'][0]
     certif = `-----BEGIN CERTIFICATE-----\n${pemData}\n-----END CERTIFICATE-----`
+    console.log(`Got the certificate: ${certif}`)
   } catch (err) {
     console.log(err)
   }
@@ -82,5 +79,6 @@ function getToken(authHeader: string): string {
   const split = authHeader.split(' ')
   const token = split[1]
 
+  console.log(`Got the token: ${token}`)
   return token
 }
